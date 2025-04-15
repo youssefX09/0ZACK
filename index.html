@@ -263,7 +263,7 @@
             width: 100px;
         }
         
-        .dashboard-page, .food-page, .drinks-page, .settings-page {
+        .dashboard-page, .food-page, .drinks-page, .settings-page, .report-page {
             display: none;
         }
         
@@ -555,6 +555,163 @@
         .delete-item-btn:hover {
             background-color: var(--danger-hover);
         }
+        
+        /* Daily Report Styling */
+        .report-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .report-header h3 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+        
+        .report-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .report-btn {
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .report-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .report-btn i {
+            font-size: 16px;
+        }
+        
+        .report-section {
+            margin-bottom: 20px;
+        }
+        
+        .report-section h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .report-table th, .report-table td {
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .report-table th {
+            background-color: rgba(0, 0, 0, 0.05);
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .report-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .report-summary {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .report-summary h4 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .summary-item:last-child {
+            margin-bottom: 0;
+            padding-top: 5px;
+            border-top: 1px solid var(--border-color);
+            font-weight: bold;
+        }
+        
+        .date-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .date-selector input {
+            width: auto;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+                color: black;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            
+            .header, .nav-links, .report-actions, .settings-form, .btn {
+                display: none !important;
+            }
+            
+            .report-container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .report-header {
+                text-align: center;
+                border-bottom: 2px solid black;
+            }
+            
+            .report-header h3 {
+                color: black;
+                font-size: 24px;
+            }
+            
+            .report-table th, .report-table td {
+                border: 1px solid #ddd;
+            }
+            
+            .report-summary {
+                border: 1px solid #ddd;
+                background-color: #f9f9f9;
+            }
+        }
     </style>
 </head>
 <body>
@@ -580,6 +737,7 @@
                 <a href="#" class="nav-link active" data-page="dashboard">الأجهزة</a>
                 <a href="#" class="nav-link" data-page="drinks">المشروبات</a>
                 <a href="#" class="nav-link" data-page="food">المأكولات</a>
+                <a href="#" class="nav-link" data-page="report">التقارير</a>
                 <a href="#" class="nav-link" data-page="settings">الإعدادات</a>
                 <a href="#" class="nav-link" id="logout-btn">تسجيل الخروج</a>
             </div>
@@ -818,6 +976,158 @@
             </div>
         </div>
 
+        <!-- Report Page -->
+        <div class="report-page" id="report-page">
+            <h2 class="section-title">التقارير اليومية</h2>
+            <div class="report-container" id="daily-report">
+                <div class="report-header">
+                    <h3>التقرير اليومي - <span id="report-date"></span></h3>
+                    <div class="report-actions">
+                        <button class="report-btn" id="print-report">
+                            <i>🖨️</i> طباعة التقرير
+                        </button>
+                        <button class="report-btn" id="export-report">
+                            <i>📥</i> تصدير PDF
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="date-selector">
+                    <label for="report-date-picker">اختر التاريخ:</label>
+                    <input type="date" id="report-date-picker">
+                    <button class="report-btn" id="generate-report">عرض التقرير</button>
+                </div>
+                
+                <div class="report-section">
+                    <h4>استخدام الأجهزة</h4>
+                    <table class="report-table" id="devices-report-table">
+                        <thead>
+                            <tr>
+                                <th>الجهاز</th>
+                                <th>وقت الاستخدام</th>
+                                <th>عدد الجلسات</th>
+                                <th>الإيرادات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>PS5 #1</td>
+                                <td>3:45:00</td>
+                                <td>5</td>
+                                <td>187.50 جنيه</td>
+                            </tr>
+                            <tr>
+                                <td>PS5 #2</td>
+                                <td>2:30:00</td>
+                                <td>3</td>
+                                <td>125.00 جنيه</td>
+                            </tr>
+                            <tr>
+                                <td>PS4 #1</td>
+                                <td>4:15:00</td>
+                                <td>6</td>
+                                <td>127.50 جنيه</td>
+                            </tr>
+                            <tr>
+                                <td>PS4 #2</td>
+                                <td>5:00:00</td>
+                                <td>4</td>
+                                <td>150.00 جنيه</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="report-section">
+                    <h4>مبيعات المأكولات</h4>
+                    <table class="report-table" id="food-report-table">
+                        <thead>
+                            <tr>
+                                <th>الصنف</th>
+                                <th>الكمية</th>
+                                <th>السعر</th>
+                                <th>الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ساندويتش برجر</td>
+                                <td>8</td>
+                                <td>45 جنيه</td>
+                                <td>360 جنيه</td>
+                            </tr>
+                            <tr>
+                                <td>بيتزا</td>
+                                <td>5</td>
+                                <td>60 جنيه</td>
+                                <td>300 جنيه</td>
+                            </tr>
+                            <tr>
+                                <td>بطاطس</td>
+                                <td>12</td>
+                                <td>25 جنيه</td>
+                                <td>300 جنيه</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="report-section">
+                    <h4>مبيعات المشروبات</h4>
+                    <table class="report-table" id="drinks-report-table">
+                        <thead>
+                            <tr>
+                                <th>الصنف</th>
+                                <th>الكمية</th>
+                                <th>السعر</th>
+                                <th>الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>قهوة</td>
+                                <td>15</td>
+                                <td>15 جنيه</td>
+                                <td>225 جنيه</td>
+                            </tr>
+                            <tr>
+                                <td>شاي</td>
+                                <td>10</td>
+                                <td>10 جنيه</td>
+                                <td>100 جنيه</td>
+                            </tr>
+                            <tr>
+                                <td>كولا</td>
+                                <td>20</td>
+                                <td>15 جنيه</td>
+                                <td>300 جنيه</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="report-summary">
+                    <h4>ملخص الإيرادات</h4>
+                    <div class="summary-item">
+                        <span>إيرادات الأجهزة:</span>
+                        <span>590.00 جنيه</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>إيرادات المأكولات:</span>
+                        <span>960.00 جنيه</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>إيرادات المشروبات:</span>
+                        <span>625.00 جنيه</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>إجمالي الإيرادات:</span>
+                        <span>2,175.00 جنيه</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Settings Page -->
         <div class="settings-page" id="settings-page">
             <h2 class="section-title">الإعدادات</h2>
@@ -868,6 +1178,26 @@
                             <input type="number" id="new-item-price" placeholder="السعر" min="0" required>
                             <button class="btn" id="add-item-btn">إضافة منتج جديد</button>
                         </div>
+                    </div>
+                    
+                    <!-- Daily Report Settings -->
+                    <div class="settings-section">
+                        <h3>إعدادات التقرير اليومي</h3>
+                        <div class="setting-item">
+                            <label>عرض التقرير اليومي عند تسجيل الدخول:</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="show-report-on-login">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>حفظ التقارير تلقائياً:</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="auto-save-reports" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <button class="btn" id="view-daily-report" style="margin-top: 10px;">عرض التقرير اليومي</button>
                     </div>
                     
                     <!-- Language Settings -->
@@ -1078,6 +1408,11 @@
             if (username === 'admin' && password === 'admin') {
                 document.getElementById('login-page').style.display = 'none';
                 document.getElementById('app').style.display = 'block';
+                
+                // Show daily report on login if enabled
+                if (document.getElementById('show-report-on-login').checked) {
+                    showPage('report');
+                }
             } else {
                 alert('اسم المستخدم أو كلمة المرور غير صحيحة');
             }
@@ -1095,34 +1430,49 @@
         const navLinks = document.querySelectorAll('.nav-link');
         const pages = document.querySelectorAll('[id$="-page"]');
         
+        function showPage(pageId) {
+            // Update active nav link
+            navLinks.forEach(link => {
+                if (link.getAttribute('data-page') === pageId) {
+                    link.classList.add('active');
+                } else if (link.id !== 'logout-btn') {
+                    link.classList.remove('active');
+                }
+            });
+            
+            // Show selected page
+            pages.forEach(page => {
+                if (page.id === pageId + '-page') {
+                    page.classList.add('active-page');
+                } else {
+                    page.classList.remove('active-page');
+                }
+            });
+            
+            // Update delete lists when settings page is shown
+            if (pageId === 'settings') {
+                updateDeleteLists();
+            }
+            
+            // Update report date when report page is shown
+            if (pageId === 'report') {
+                updateReportDate();
+            }
+        }
+        
         navLinks.forEach(link => {
             if (link.id !== 'logout-btn') {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
-                    
-                    // Update active nav link
-                    navLinks.forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Show selected page
                     const targetPage = this.getAttribute('data-page');
-                    pages.forEach(page => {
-                        if (page.id === targetPage + '-page') {
-                            page.classList.add('active-page');
-                        } else {
-                            page.classList.remove('active-page');
-                        }
-                    });
-                    
-                    // Update delete lists when settings page is shown
-                    if (targetPage === 'settings') {
-                        updateDeleteLists();
-                    }
+                    showPage(targetPage);
                 });
             }
         });
         
         // Device Timer functionality
+        let sessionData = [];
+        
         function setupDeviceTimers() {
             document.querySelectorAll('.device-box').forEach((deviceBox, index) => {
                 const startBtn = deviceBox.querySelector('.start-btn');
@@ -1130,13 +1480,18 @@
                 const timerEl = deviceBox.querySelector('.timer');
                 const costEl = deviceBox.querySelector('.cost');
                 const statusEl = deviceBox.querySelector('.status');
+                const deviceId = deviceBox.getAttribute('data-id');
                 
                 if (!startBtn || !stopBtn || !timerEl || !costEl || !statusEl) return;
                 
                 let timerInterval;
                 let seconds = 0;
+                let sessionStartTime;
                 
                 startBtn.addEventListener('click', function() {
+                    // Record session start
+                    sessionStartTime = new Date();
+                    
                     // Start timer
                     timerInterval = setInterval(function() {
                         seconds++;
@@ -1172,6 +1527,26 @@
                     // Stop timer
                     clearInterval(timerInterval);
                     
+                    // Record session data
+                    const sessionEndTime = new Date();
+                    const sessionDuration = seconds;
+                    const isPS5 = deviceBox.querySelector('h3').textContent.includes('PS5');
+                    const deviceName = deviceBox.querySelector('h3').textContent.trim().split('\n')[0].trim();
+                    const hourlyRate = isPS5 ? 
+                        parseFloat(document.getElementById('ps5-price').value) : 
+                        parseFloat(document.getElementById('ps4-price').value);
+                    const finalCost = parseFloat(costEl.textContent);
+                    
+                    sessionData.push({
+                        deviceId: deviceId,
+                        deviceName: deviceName,
+                        startTime: sessionStartTime,
+                        endTime: sessionEndTime,
+                        duration: sessionDuration,
+                        cost: finalCost,
+                        date: sessionStartTime.toISOString().split('T')[0]
+                    });
+                    
                     // Update UI
                     startBtn.disabled = false;
                     stopBtn.disabled = true;
@@ -1180,13 +1555,15 @@
                     statusEl.classList.add('available');
                     
                     // Alert total cost
-                    const finalCost = parseFloat(costEl.textContent);
                     alert(`تم إنهاء الجلسة. التكلفة الإجمالية: ${finalCost} جنيه`);
                     
                     // Reset timer and cost
                     seconds = 0;
                     timerEl.textContent = '00:00:00';
                     costEl.textContent = '0.00';
+                    
+                    // Update report data
+                    updateReportData();
                 });
             });
         }
@@ -1253,6 +1630,68 @@
             return prefix + '-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
         }
         
+        // Sales data for reports
+        let salesData = {
+            food: [
+                { id: 'food-1', name: 'ساندويتش برجر', price: 45, quantity: 8, total: 360 },
+                { id: 'food-2', name: 'بيتزا', price: 60, quantity: 5, total: 300 },
+                { id: 'food-3', name: 'بطاطس', price: 25, quantity: 12, total: 300 }
+            ],
+            drinks: [
+                { id: 'drink-1', name: 'قهوة', price: 15, quantity: 15, total: 225 },
+                { id: 'drink-2', name: 'شاي', price: 10, quantity: 10, total: 100 },
+                { id: 'drink-4', name: 'كولا', price: 15, quantity: 20, total: 300 }
+            ]
+        };
+        
+        // Add item to sales data
+        function addItemToSales(type, id, name, price, quantity = 1) {
+            const total = price * quantity;
+            const existingItem = salesData[type].find(item => item.id === id);
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+                existingItem.total += total;
+            } else {
+                salesData[type].push({ id, name, price, quantity, total });
+            }
+            
+            // Update report data
+            updateReportData();
+        }
+        
+        // Setup add to cart buttons
+        function setupAddToCartButtons() {
+            // Food items
+            document.querySelectorAll('#food-container .menu-item').forEach(item => {
+                const addBtn = item.querySelector('.start-btn');
+                const itemId = item.getAttribute('data-id');
+                const itemName = item.querySelector('.menu-item-name').textContent;
+                const itemPrice = parseFloat(item.querySelector('.menu-item-price').textContent);
+                
+                addBtn.addEventListener('click', function() {
+                    addItemToSales('food', itemId, itemName, itemPrice);
+                    alert(`تمت إضافة ${itemName} إلى الطلبات`);
+                });
+            });
+            
+            // Drink items
+            document.querySelectorAll('#drinks-container .menu-item').forEach(item => {
+                const addBtn = item.querySelector('.start-btn');
+                const itemId = item.getAttribute('data-id');
+                const itemName = item.querySelector('.menu-item-name').textContent;
+                const itemPrice = parseFloat(item.querySelector('.menu-item-price').textContent);
+                
+                addBtn.addEventListener('click', function() {
+                    addItemToSales('drinks', itemId, itemName, itemPrice);
+                    alert(`تمت إضافة ${itemName} إلى الطلبات`);
+                });
+            });
+        }
+        
+        // Initialize add to cart buttons
+        setupAddToCartButtons();
+        
         // Confirm Add Food
         document.getElementById('confirm-add-food').addEventListener('click', function() {
             const foodName = document.getElementById('new-food-name').value;
@@ -1282,6 +1721,9 @@
             
             // Setup delete button
             setupDeleteButtons();
+            
+            // Setup add to cart button
+            setupAddToCartButtons();
             
             // Close modal and reset form
             document.getElementById('add-food-modal').style.display = 'none';
@@ -1323,6 +1765,9 @@
             
             // Setup delete button
             setupDeleteButtons();
+            
+            // Setup add to cart button
+            setupAddToCartButtons();
             
             // Close modal and reset form
             document.getElementById('add-drink-modal').style.display = 'none';
@@ -1490,6 +1935,7 @@
                     document.querySelector('[data-page="dashboard"]').textContent = 'Devices';
                     document.querySelector('[data-page="drinks"]').textContent = 'Drinks';
                     document.querySelector('[data-page="food"]').textContent = 'Food';
+                    document.querySelector('[data-page="report"]').textContent = 'Reports';
                     document.querySelector('[data-page="settings"]').textContent = 'Settings';
                     document.getElementById('logout-btn').textContent = 'Logout';
                     // ... and so on for other UI elements
@@ -1499,6 +1945,7 @@
                     document.querySelector('[data-page="dashboard"]').textContent = 'الأجهزة';
                     document.querySelector('[data-page="drinks"]').textContent = 'المشروبات';
                     document.querySelector('[data-page="food"]').textContent = 'المأكولات';
+                    document.querySelector('[data-page="report"]').textContent = 'التقارير';
                     document.querySelector('[data-page="settings"]').textContent = 'الإعدادات';
                     document.getElementById('logout-btn').textContent = 'تسجيل الخروج';
                     // ... and so on for other UI elements
@@ -1648,6 +2095,199 @@
         
         // Initialize delete lists
         updateDeleteLists();
+        
+        // Daily Report functionality
+        function updateReportDate() {
+            const today = new Date();
+            const formattedDate = today.toLocaleDateString('ar-EG', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            document.getElementById('report-date').textContent = formattedDate;
+            
+            // Set date picker to today
+            const datePicker = document.getElementById('report-date-picker');
+            datePicker.value = today.toISOString().split('T')[0];
+        }
+        
+        // Initialize report date
+        updateReportDate();
+        
+        // Update report data
+        function updateReportData() {
+            // Get selected date
+            const selectedDate = document.getElementById('report-date-picker').value;
+            
+            // Filter session data for selected date
+            const filteredSessions = sessionData.filter(session => 
+                session.date === selectedDate
+            );
+            
+            // Group sessions by device
+            const deviceSessions = {};
+            filteredSessions.forEach(session => {
+                if (!deviceSessions[session.deviceId]) {
+                    deviceSessions[session.deviceId] = {
+                        deviceName: session.deviceName,
+                        totalTime: 0,
+                        sessionCount: 0,
+                        revenue: 0
+                    };
+                }
+                
+                deviceSessions[session.deviceId].totalTime += session.duration;
+                deviceSessions[session.deviceId].sessionCount++;
+                deviceSessions[session.deviceId].revenue += session.cost;
+            });
+            
+            // Update devices table
+            const devicesTable = document.getElementById('devices-report-table').querySelector('tbody');
+            devicesTable.innerHTML = '';
+            
+            let totalDeviceRevenue = 0;
+            
+            Object.values(deviceSessions).forEach(device => {
+                const hours = Math.floor(device.totalTime / 3600);
+                const minutes = Math.floor((device.totalTime % 3600) / 60);
+                const seconds = device.totalTime % 60;
+                const formattedTime = 
+                    (hours < 10 ? '0' + hours : hours) + ':' +
+                    (minutes < 10 ? '0' + minutes : minutes) + ':' +
+                    (seconds < 10 ? '0' + seconds : seconds);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${device.deviceName}</td>
+                    <td>${formattedTime}</td>
+                    <td>${device.sessionCount}</td>
+                    <td>${device.revenue.toFixed(2)} جنيه</td>
+                `;
+                
+                devicesTable.appendChild(row);
+                totalDeviceRevenue += device.revenue;
+            });
+            
+            // If no device sessions for selected date, show sample data
+            if (Object.keys(deviceSessions).length === 0) {
+                devicesTable.innerHTML = `
+                    <tr>
+                        <td>PS5 #1</td>
+                        <td>3:45:00</td>
+                        <td>5</td>
+                        <td>187.50 جنيه</td>
+                    </tr>
+                    <tr>
+                        <td>PS5 #2</td>
+                        <td>2:30:00</td>
+                        <td>3</td>
+                        <td>125.00 جنيه</td>
+                    </tr>
+                    <tr>
+                        <td>PS4 #1</td>
+                        <td>4:15:00</td>
+                        <td>6</td>
+                        <td>127.50 جنيه</td>
+                    </tr>
+                    <tr>
+                        <td>PS4 #2</td>
+                        <td>5:00:00</td>
+                        <td>4</td>
+                        <td>150.00 جنيه</td>
+                    </tr>
+                `;
+                totalDeviceRevenue = 590.00;
+            }
+            
+            // Update food table
+            const foodTable = document.getElementById('food-report-table').querySelector('tbody');
+            foodTable.innerHTML = '';
+            
+            let totalFoodRevenue = 0;
+            
+            salesData.food.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.price} جنيه</td>
+                    <td>${item.total} جنيه</td>
+                `;
+                
+                foodTable.appendChild(row);
+                totalFoodRevenue += item.total;
+            });
+            
+            // Update drinks table
+            const drinksTable = document.getElementById('drinks-report-table').querySelector('tbody');
+            drinksTable.innerHTML = '';
+            
+            let totalDrinksRevenue = 0;
+            
+            salesData.drinks.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.price} جنيه</td>
+                    <td>${item.total} جنيه</td>
+                `;
+                
+                drinksTable.appendChild(row);
+                totalDrinksRevenue += item.total;
+            });
+            
+            // Update summary
+            const totalRevenue = totalDeviceRevenue + totalFoodRevenue + totalDrinksRevenue;
+            
+            const summaryItems = document.querySelectorAll('.summary-item');
+            summaryItems[0].querySelector('span:last-child').textContent = `${totalDeviceRevenue.toFixed(2)} جنيه`;
+            summaryItems[1].querySelector('span:last-child').textContent = `${totalFoodRevenue.toFixed(2)} جنيه`;
+            summaryItems[2].querySelector('span:last-child').textContent = `${totalDrinksRevenue.toFixed(2)} جنيه`;
+            summaryItems[3].querySelector('span:last-child').textContent = `${totalRevenue.toFixed(2)} جنيه`;
+        }
+        
+        // Generate report button
+        document.getElementById('generate-report').addEventListener('click', function() {
+            updateReportData();
+            
+            // Update report date display
+            const selectedDate = document.getElementById('report-date-picker').value;
+            const date = new Date(selectedDate);
+            const formattedDate = date.toLocaleDateString('ar-EG', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            document.getElementById('report-date').textContent = formattedDate;
+            
+            alert('تم تحديث التقرير بنجاح');
+        });
+        
+        // View daily report from settings
+        document.getElementById('view-daily-report').addEventListener('click', function() {
+            showPage('report');
+            updateReportDate();
+            updateReportData();
+        });
+        
+        // Print report
+        document.getElementById('print-report').addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Export report as PDF
+        document.getElementById('export-report').addEventListener('click', function() {
+            alert('سيتم تصدير التقرير كملف PDF');
+            window.print(); // In a real app, this would use a PDF library
+        });
+        
+        // Initialize report data
+        updateReportData();
     </script>
 </body>
 </html>
